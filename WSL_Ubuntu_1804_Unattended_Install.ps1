@@ -24,12 +24,16 @@ function Install-WSL1804 {
     Start-Process "$DestinationPath\ubuntu1804.exe" -ArgumentList "run usermod -aG sudo $user" -Wait
     Start-Process "$DestinationPath\ubuntu1804.exe" -ArgumentList "config --default-user $user" -Wait
 }
+
 function Remove-WSL {
     ### WSL CLEAN UP ###
-    Remove-Item C:\WSL -Recurse -Force
-    Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss' | Remove-Item
+    $WSL = 'C:\WSL'
+    Get-ChildItem -Path $WSL -Recurse | Where-Object {-not $_.PSIsContainer } | Remove-Item -Force
+    Remove-Item -Path $WSL -Recurse -Force
+
+    Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss' | Remove-Item   
     Remove-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Lxss' -Name DefaultDistribution
 }
 
-If (-not ($null -eq $user)) { Install-WSL1804 }
-If (-not ($null -eq $clean.IsPresent)) { Remove-WSL }
+If(-not ($null -eq $user)){ Install-WSL1804 }
+Else { If($clean.IsPresent){ Remove-WSL } }
